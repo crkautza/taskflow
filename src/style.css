@@ -1,0 +1,66 @@
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #101112;
+    margin: 0;
+    height: 100vh;
+}
+
+ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+span, button, input, h1{
+    color: white;
+    margin: 0;
+}
+
+h1{
+    padding-bottom: 10px;
+    text-align: center;
+    font-size: 60px;
+}
+
+span{
+    padding-right: 20px;
+}
+
+.checkbox{
+    width: 50px;
+}
+
+button, input{
+    width: 200px;
+    border: none;
+    background-color: #101112;
+}
+
+button:hover, input:hover{
+    border: none;
+    background-color: #2b2d30;
+}
+
+.inputTask{
+    height: 20px;
+    padding: 10px;
+}
+
+.addBtn{
+    height: 40px;
+}
+
+.removeBtn, .editBtn{
+    margin-top: 20px;
+    height: 30px;
+    width: 70px;
+}
+.container{
+    padding: 150px;
+    flex-direction: column;
+    background-color: #272829;
+    border-radius: 8px;
+    margin: 10px;
+}
