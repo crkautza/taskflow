@@ -20,6 +20,8 @@ allBtn.addEventListener('click', allFilter);
 activeBtn.addEventListener('click', activeFilter);
 concludedBtn.addEventListener('click', concludedFilter);
 
+getState();
+
 //functions
 function createTask() {
     if (addInput.value) {
@@ -27,38 +29,35 @@ function createTask() {
         let name = addInput.value;
         let id = `id-${i}`;
         tasks[id] = {name: name, element: null, concluded: false};
-        listTask(name, null);
+        listTask(name, false, id);
         i++;
-
+        setState();
         decidefilter();
         count();
     }
 }
 
-function listTask(text = null, id = null) {
-    let input = document.createElement('input');
-    let span = document.createElement('span');
-    let removebutton = document.createElement('button');
-    let editbutton = document.createElement('button');
-    input.type = 'checkbox';
-    input.className = 'checkbox';
-    removebutton.textContent = 'Remover';
-    removebutton.className = 'removeBtn';
-    editbutton.textContent = 'Editar';
-    editbutton.className = 'editBtn';
-    let li = document.createElement('li');
-    Object.keys(tasks).forEach(chave => {
-        if(id == null){
-            span.textContent = text;
-            li.id = chave;
-            generalList.appendChild(li);
-            let list = document.getElementById(chave);
-            let elements = [input, span, removebutton, editbutton];
-            appendArray(list, elements);
-            tasks[chave].element = generalList.children[chave];
+function listTask(text = null, editMode = false, id = null) {
+    let {input, span, removebutton, editbutton, li} = createElements();
+    if(editMode == false){
+        span.textContent = text;
+        li.id = id;
+        generalList.appendChild(li);
+        let list = document.getElementById(id);
+        let elements = [input, span, removebutton, editbutton];
+        appendArray(list, elements);
+        tasks[id].element = list;
+        input.addEventListener('change', (event) => {
+            concluded(event, li.id, span, editbutton)
+        });
+        if(tasks[id].concluded == true){
+            input.checked = true;
+            span.className = 'concluded';
+            editbutton.disabled = true;
         }
-    })
-    if(id != null){
+        removebutton.addEventListener('click', () => removeTask(li.id));
+        editbutton.addEventListener('click', () => editTask(li.id));
+    }else{
         text = tasks[id].name;
         span.textContent = text;
         let list = document.getElementById(id);
@@ -69,12 +68,12 @@ function listTask(text = null, id = null) {
         });
         removebutton.addEventListener('click', () => removeTask(id));
         editbutton.addEventListener('click', () => editTask(id));
-    }else{
-        input.addEventListener('change', (event) => {
-            concluded(event, li.id, span, editbutton)
-        });
-        removebutton.addEventListener('click', () => removeTask(li.id));
-        editbutton.addEventListener('click', () => editTask(li.id));
+    }
+}
+
+function renderAllTasks() {
+    for (const key in tasks) {
+        listTask(tasks[key].name, false, key);
     }
 }
 
@@ -82,6 +81,7 @@ function removeTask(id) {
     let removeLi = document.getElementById(id);
     generalList.removeChild(removeLi);
     delete tasks[id];
+    setState();
     decidefilter();
     count();
 }
@@ -120,7 +120,8 @@ function salveTask(text, id){
         let removeElements = [input, saveBtn, cancelBtn];
         removeArray(li, removeElements);
         tasks[id].name = text;
-        listTask(text, id);
+        listTask(text, true, id);
+        setState();
     }
 }
 
@@ -131,7 +132,7 @@ function cancel(text, id){
     let cancelBtn = li.children[2];
     let removeElements = [input, saveBtn, cancelBtn];
     removeArray(li, removeElements);
-    listTask(text, id);
+    listTask(text, false, id);
 }
 
 function decidefilter(){
@@ -151,12 +152,14 @@ function concluded(event, id, span, editbutton){
         tasks[id].concluded = true;
         span.className = 'concluded';
         editbutton.disabled = true;
+        setState();
         count();
     }else{
         tasks[id].concluded = false;
         span.className = '';
         span.removeAttribute('class');
         editbutton.disabled = false;
+        setState();
         count();
     }
     decidefilter();
@@ -310,4 +313,40 @@ function count() {
     countAll.textContent = iActive + iConcluded;
     countConcluded.textContent = iConcluded;
     countActives.textContent = iActive;
+}
+
+function setState() {
+    let Stringtask = JSON.stringify(tasks);
+    localStorage.setItem('task', Stringtask);
+}
+
+function getState() {
+    let StringTask = localStorage.getItem('task');
+    if(StringTask){
+        let taskParse = JSON.parse(StringTask);
+        tasks = taskParse;
+        generalList.innerHTML = '';
+        renderAllTasks();
+        for (const key in tasks) {
+            tasks[key].element = document.getElementById(key);
+        }
+        decidefilter();
+        count();
+    }
+}
+
+function createElements() {
+    let input = document.createElement('input');
+    let span = document.createElement('span');
+    let removebutton = document.createElement('button');
+    let editbutton = document.createElement('button');
+    input.type = 'checkbox';
+    input.className = 'checkbox';
+    removebutton.textContent = 'Remover';
+    removebutton.className = 'removeBtn';
+    editbutton.textContent = 'Editar';
+    editbutton.className = 'editBtn';
+    let li = document.createElement('li');
+    let elements = {input, span, removebutton, editbutton, li};
+    return elements;
 }
